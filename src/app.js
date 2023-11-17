@@ -1,5 +1,8 @@
 import express from "express";
 import UsersRouter from "./routes/users.router.js";
+import OrdersRouter from "./routes/orders.router.js";
+import GoodsRouter from "./routes/goods.router.js";
+import GoodsCommentsRouter from "./goods.router.js";
 
 const app = express();
 const router = express.Router();
@@ -11,7 +14,13 @@ router.get("/", (req, res) => {
   return res.status(200).json({ message: "성공!" });
 });
 
-app.use("/api", [router, UsersRouter]);
+app.use("/api", [
+  router,
+  UsersRouter,
+  OrdersRouter,
+  GoodsRouter,
+  GoodsCommentsRouter,
+]);
 
 app.listen(PORT, () => {
   console.log(PORT, `${PORT} 포트로 서버가 열렸어요!`);
