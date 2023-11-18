@@ -46,7 +46,7 @@ model Goods {
 }
 
 model Comments {
-  commendId Int @id @default(autoincrement()) @map("commendId")
+  commentId Int @id @default(autoincrement()) @map("commentId")
   GoodsId Int @map("GoodsId")
   UserId Int @map("UserId")
   comment String @map("comment") @db.Text
@@ -55,7 +55,7 @@ model Comments {
   updatedAt DateTime @updatedAt @map("updatedAt")
   
   User Users @relation(fields: [UserId], references: [userId], onDelete: Cascade)
-  Good Goods @relation(fields: [GoodsId], references: [goodsId], onDelete: Cascade)
+  Goods Goods @relation(fields: [GoodsId], references: [goodsId], onDelete: Cascade)
 
   @@map("Comments")
 }
