@@ -23,6 +23,7 @@ model Users {
   Goods Goods[]
   Comments Comments[]
   Orders Orders[]
+  Likes Likes[]
 
   @@map("Users")
 }
@@ -34,19 +35,21 @@ model Goods {
   imageUrl String @map("imageUrl")
   price Int @map("price")
   content String @map("content") @db.Text
-  like Int @map("like")
+  likeCount Int @default(0) @map("likeCount")
 
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
   User Users @relation(fields: [UserId], references: [userId], onDelete: Cascade)
   Comments Comments[]
+  Orders Orders[]
+  Likes Likes[]
 
   @@map("Goods")
 }
 
 model Comments {
-  commendId Int @id @default(autoincrement()) @map("commendId")
+  commentId Int @id @default(autoincrement()) @map("commentId")
   GoodsId Int @map("GoodsId")
   UserId Int @map("UserId")
   comment String @map("comment") @db.Text
@@ -62,11 +65,24 @@ model Comments {
 
 model Orders {
   orderId Int @id @default(autoincrement()) @map("orderId")
+  GoodsId Int @map("GoodsId")
   UserId Int @map("UserId")
   quantity Int @default(1) @map("quantity")
   totalPrice Int @map("totalPrice")
 
   User Users @relation(fields: [UserId], references: [userId], onDelete: Cascade)
+  Good Goods @relation(fields: [GoodsId], references: [goodsId], onDelete: Cascade)
 
   @@map("Orders")
+}
+
+model Likes {
+  likeId Int @id @default(autoincrement()) @map("likeId")
+  UserId Int @map("UserId")
+  GoodsId Int @map("GoodsId")
+
+  User      Users   @relation(fields: [UserId], references: [userId], onDelete : Cascade)
+  Good     Goods   @relation(fields: [GoodsId], references: [goodsId], onDelete : Cascade)
+
+  @@map("Likes")
 }
