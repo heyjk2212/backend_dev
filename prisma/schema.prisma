@@ -58,7 +58,7 @@ model Comments {
   updatedAt DateTime @updatedAt @map("updatedAt")
   
   User Users @relation(fields: [UserId], references: [userId], onDelete: Cascade)
-  Good Goods @relation(fields: [GoodsId], references: [goodsId], onDelete: Cascade)
+  Goods Goods @relation(fields: [GoodsId], references: [goodsId], onDelete: Cascade)
 
   @@map("Comments")
 }
