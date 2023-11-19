@@ -1,14 +1,24 @@
 import express from "express";
 import { prisma } from "../utils/prisma/index.js";
+import authMiddleware from "../middlewares/auth.middleware.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import {
+  usersSchema,
+  userUpdateSchema,
+  paramsSchema,
+} from "../validation/joi.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const router = express.Router();
+const secretKey = process.env.SECRET_KEY;
 
 // SignUp API
 router.post("/signup", async (req, res, next) => {
   try {
-    const { loginId, password, nickname, userType } = req.body;
+    const validation = await usersSchema.validateAsync(req.body);
+    const { loginId, password, nickname, userType } = validation;
 
     const user = await prisma.users.findFirst({
       where: {
@@ -20,7 +30,6 @@ router.post("/signup", async (req, res, next) => {
       return res.status(409).json({ errorMessage: "중복된 USER ID 입니다." });
     }
 
-    // 비밀번호 암호화
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await prisma.users.create({
@@ -33,19 +42,16 @@ router.post("/signup", async (req, res, next) => {
     });
 
     return res.status(201).json({ message: "회원가입이 완료되었습니다." });
-  } catch (error) {
-    console.error(error);
-
-    return res
-      .status(500)
-      .json({ errorMessage: "서버에서 에러가 발생하였습니다." });
+  } catch (err) {
+    next(err);
   }
 });
 
 // LogIn API
 router.post("/login", async (req, res, next) => {
   try {
-    const { loginId, password } = req.body;
+    const validation = await usersSchema.validateAsync(req.body);
+    const { loginId, password } = validation;
 
     const user = await prisma.users.findFirst({
       where: {
@@ -59,34 +65,26 @@ router.post("/login", async (req, res, next) => {
         .json({ errorMessage: "존재하지 않는 USER ID 입니다." });
     }
 
-    // 비밀번호 일치하는지 확인
     const result = await bcrypt.compare(password, user.password);
 
-    // 검증에 실패할 경우
     if (!result) {
       return res
         .status(400)
         .json({ errorMessage: "비밀번호 형식에 일치하지 않습니다" });
     }
 
-    // 로그인 성공했을 시 JWT 토큰 발급
-    const token = await jwt.sign(
+    const token = jwt.sign(
       {
         userId: user.userId,
       },
-      "customized_secret_key"
+      secretKey
     );
 
-    // 쿠키 발급
     res.cookie("authorization", `Bearer ${token}`);
 
     return res.status(200).json({ message: "로그인에 성공하였습니다." });
-  } catch (error) {
-    console.error(error);
-
-    return res
-      .status(500)
-      .json({ errorMessage: "서버에서 에러가 발생하였습니다." });
+  } catch (err) {
+    next(err);
   }
 });
 
@@ -97,11 +95,78 @@ router.post("/logout", async (req, res, next) => {
 
     return res.status(200).json({ errorMessage: "로그아웃 되었습니다." });
   } catch (error) {
-    console.error(error);
+    next(err);
+  }
+});
 
+// UsersInfo API
+router.get("/usersInfo", async (req, res, next) => {
+  try {
+    const users = await prisma.users.findMany({
+      select: {
+        loginId: true,
+        password: true,
+        nickname: true,
+        userType: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.status(200).json({ data: users });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// API for Logged-In user's information, My Page
+router.get("/mypage", authMiddleware, async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+
+    const user = await prisma.users.findFirst({
+      where: {
+        userId: +userId,
+      },
+      select: {
+        loginId: true,
+        nickname: true,
+        userType: true,
+        createdAt: true,
+      },
+    });
+
+    return res.status(200).json({ data: user });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Logged-In user's information update API, My Page
+router.patch("/mypage/:userId", authMiddleware, async (req, res, next) => {
+  try {
+    const validation = await userUpdateSchema.validateAsync(req.body);
+    const validateParams = await paramsSchema.validateAsync(req.params);
+    const { userId } = validateParams;
+    const { loginId, nickname, userType } = validation;
+    // userId는 authMiddleware에서 가져와야할까..아니면 위에 params에서 가져와야 할까..?
+
+    await prisma.users.update({
+      where: {
+        userId: +userId,
+      },
+      data: {
+        loginId,
+        nickname,
+        userType,
+      },
+    });
     return res
-      .status(500)
-      .json({ errorMessage: "서버에서 에러가 발생하였습니다." });
+      .status(200)
+      .json({ message: "성공적으로 유저 정보를 변경하였습니다." });
+  } catch (err) {
+    next(err);
   }
 });
 
