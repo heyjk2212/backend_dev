@@ -67,9 +67,9 @@ router.post("/orders", authMiddleware, async (req, res, next) => {
 });
 
 // 장바구니에 있는 상품 삭제
-router.delete("/orders", authMiddleware, async (req, res, next) => {
+router.delete("/orders/:orderId", authMiddleware, async (req, res, next) => {
     try {
-        const { orderId } = req.body;
+        const { orderId } = req.params;
         const { userId } = req.user;
         const findOrder = await prisma.orders.findFirst({
             where: { orderId: +orderId },
