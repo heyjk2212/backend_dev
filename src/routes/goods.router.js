@@ -1,5 +1,6 @@
 import express from "express";
 import { prisma } from '../utils/prisma/index.js';
+import authMiddleware from '../middlewares/auth.middleware.js'
 
 const router = express.Router();
 
@@ -8,6 +9,10 @@ router.post('/goods/content', authMiddleware, async (req, res, next) => {
     try {
         const { userId } = req.user;
         const { goodsName, imageUrl, price, content } = req.body;
+
+        if(req.user.userType === "BUYER"){
+            return res.status(400).json({message : "글 작성 권한이 없습니다."})
+        }
 
         await prisma.goods.create({
             data: {
@@ -52,6 +57,10 @@ router.patch('/goods/:goodsId/content', authMiddleware, async (req, res, next) =
         const { goodsId } = req.params;
         const { goodsName, imageUrl, price, content } = req.body;
 
+        if(req.user.userType === "BUYER"){
+            return res.status(400).json({message : "해당 게시글에 대한 권한이 없습니다."})
+        }
+
         const findGoods = await prisma.goods.findFirst({
             where: { UserId: +userId, goodsId: +goodsId }
         });
@@ -77,6 +86,10 @@ router.delete('/goods/:goodsId/content', authMiddleware, async (req, res, next) 
     try {
         const { userId } = req.user;
         const { goodsId } = req.params;
+
+        if(req.user.userType === "BUYER"){
+            return res.status(400).json({message : "권한이 없습니다."})
+        }
 
         const existsGoods = await prisma.goods.findFirst({
             where: { UserId: +userId, goodsId: +goodsId }
