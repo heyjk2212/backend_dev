@@ -9,6 +9,10 @@ router.get("/orders", authMiddleware, async (req, res, next) => {
     try {
         const { userId } = req.user;
 
+        if(req.user.userType === "SELLER"){
+            return res.status(400).json({message : "권한이 없습니다."})
+        }
+
         const Orders = await prisma.orders.findMany({
             where: { UserId: userId },
             select: {
@@ -25,9 +29,8 @@ router.get("/orders", authMiddleware, async (req, res, next) => {
         });
 
         return res.status(201).json({ data: Orders });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "서버 에러" });
+    } catch (err) {
+        next(err)
     }
 });
 
@@ -37,31 +40,29 @@ router.post("/orders", authMiddleware, async (req, res, next) => {
         const { userId } = req.user;
         const { goodsId, quantity } = req.body;
 
+        if(req.user.userType === "SELLER"){
+            return res.status(400).json({message : "권한이 없습니다."})
+        }
+
         const findGoods = await prisma.goods.findFirst({
             where: { goodsId: +goodsId },
         });
-        if (!findGoods) {
-            return res
-                .status(401)
-                .json({ message: "해당 상품은 존재하지 않습니다." });
-        }
 
-        const totlaPrice = findGoods.price * quantity;
+        const totalPrice = findGoods.price * quantity;
 
         const JoinOrders = await prisma.orders.create({
             data: {
                 UserId: +userId,
                 GoodsId: +goodsId,
                 quantity: quantity,
-                totalPrice: totlaPrice,
+                totalPrice: totalPrice,
             },
         });
         return res
             .status(201)
             .json({ message: "장바구니에 상품이 추가 되었습니다." });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "서버 에러" });
+    } catch (err) {
+        next(err)
     }
 });
 
@@ -73,11 +74,6 @@ router.delete("/orders", authMiddleware, async (req, res, next) => {
         const findOrder = await prisma.orders.findFirst({
             where: { orderId: +orderId },
         });
-        if (!findOrder) {
-            return res
-                .status(401)
-                .json({ message: "존재하지 않는 주문입니다." });
-        }
 
         const deleteOrder = await prisma.orders.delete({
             where: { UserId: +userId, orderId: +orderId },
@@ -86,9 +82,8 @@ router.delete("/orders", authMiddleware, async (req, res, next) => {
         return res
             .status(201)
             .json({ message: "상품이 장바구니에서 삭제 되었습니다." });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "서버 에러" });
+    } catch (err) {
+        next(err)
     }
 });
 
