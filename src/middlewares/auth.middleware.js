@@ -3,6 +3,7 @@ import { prisma } from "../utils/prisma/index.js";
 
 export default async function (req, res, next) {
   try {
+    // const token = req.headers.authorization.split(" ")[1];
     const { authorization } = req.cookies;
     const [tokenType, token] = authorization.split(" ");
     const secretKey = process.env.SECRET_KEY;
