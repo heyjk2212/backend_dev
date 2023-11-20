@@ -12,6 +12,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const router = express.Router();
+
 const secretKey = process.env.SECRET_KEY;
 
 // SignUp API
@@ -83,6 +84,7 @@ router.post("/login", async (req, res, next) => {
     res.cookie("authorization", `Bearer ${token}`);
 
     return res.status(200).json({ message: "로그인에 성공하였습니다." });
+    // return res.status(200).json({ userInfo: token }); // 토큰을 클라이언트에게 바로 전달
   } catch (err) {
     next(err);
   }
@@ -99,22 +101,18 @@ router.post("/logout", async (req, res, next) => {
   }
 });
 
-// UsersInfo API
-router.get("/usersInfo", async (req, res, next) => {
+// API to check login status
+router.get("/checkLoginStatus", authMiddleware, async (req, res, next) => {
   try {
-    const users = await prisma.users.findMany({
-      select: {
-        loginId: true,
-        password: true,
-        nickname: true,
-        userType: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const user = req.user;
 
-    return res.status(200).json({ data: users });
+    if (user) {
+      return res.status(200).json({ isLoggedIn: true, user });
+    } else {
+      return res
+        .status(401)
+        .json({ isLoggedIn: false, message: "사용자가 인증되지 않았습니다." });
+    }
   } catch (err) {
     next(err);
   }
@@ -149,7 +147,7 @@ router.patch("/mypage/:userId", authMiddleware, async (req, res, next) => {
     const validation = await userUpdateSchema.validateAsync(req.body);
     const validateParams = await paramsSchema.validateAsync(req.params);
     const { userId } = validateParams;
-    const { loginId, nickname, userType } = validation;
+    const { loginId, nickname } = validation;
     // userId는 authMiddleware에서 가져와야할까..아니면 위에 params에서 가져와야 할까..?
 
     await prisma.users.update({
@@ -159,7 +157,6 @@ router.patch("/mypage/:userId", authMiddleware, async (req, res, next) => {
       data: {
         loginId,
         nickname,
-        userType,
       },
     });
     return res
