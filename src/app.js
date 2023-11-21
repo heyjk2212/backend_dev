@@ -6,10 +6,12 @@ import logMiddleware from "./middlewares/log.middleware.js";
 import GoodsCommentsRouter from "./routes/goods.comments.router.js";
 import OrdersRouter from "./routes/orders.router.js";
 import GoodsRouter from "./routes/goods.router.js";
+import cors from 'cors';
 
 const app = express();
 const PORT = 3000;
 
+app.use(cors({origin: '*'}));
 app.use(logMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
