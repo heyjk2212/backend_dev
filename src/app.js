@@ -11,7 +11,7 @@ import cors from 'cors';
 const app = express();
 const PORT = 3000;
 
-app.use(cors({origin: '*'}));
+app.use(cors({ origin: 'http://localhost:3000', optionsSuccessStatus: 200 }));
 app.use(logMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
