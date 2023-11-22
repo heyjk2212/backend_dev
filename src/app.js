@@ -6,9 +6,16 @@ import logMiddleware from "./middlewares/log.middleware.js";
 import GoodsCommentsRouter from "./routes/goods.comments.router.js";
 import OrdersRouter from "./routes/orders.router.js";
 import GoodsRouter from "./routes/goods.router.js";
+import cors from "cors";
+
+app.use(cors({ origin: "*", optionsSuccessStatus: 200 }));
 
 const app = express();
+// 모든 출처에서의 요청을 허용하는 설정
+app.use(cors());
 const PORT = 3000;
+
+app.use(cors({ origin: "*", optionsSuccessStatus: 200 }));
 
 app.use(logMiddleware);
 app.use(express.json());
