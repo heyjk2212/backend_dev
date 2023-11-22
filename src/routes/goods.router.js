@@ -23,17 +23,7 @@ router.post("/goods/content", authMiddleware, async (req, res, next) => {
         content: content,
       },
     });
-
-    const userInfo = await prisma.users.findFirst({
-      where: {
-        userId: +userId,
-      },
-      select: {
-        userType: true,
-      },
-    });
-
-    return res.status(201).json({ data: userInfo });
+    return res.status(201).json({ message: "게시글을 등록 하였습니다." });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "서버 에러" });
