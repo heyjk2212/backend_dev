@@ -5,15 +5,15 @@ export default async function (req, res, next) {
   try {
     const token = req.headers.authorization;
 
-    if (!token || !token.startsWith("Bearer ")) {
-      throw new Error("올바른 토큰이 제공되지 않았습니다.");
-    }
+    // if (!token || !token.startsWith("Bearer ")) {
+    //   throw new Error("올바른 토큰이 제공되지 않았습니다.");
+    // }
 
-    const rawToken = token.split("Bearer ")[1].trim();
+    // const rawToken = token.split("Bearer ")[1].trim();
 
     const secretKey = process.env.SECRET_KEY;
 
-    const decodedToken = jwt.verify(rawToken, secretKey);
+    const decodedToken = jwt.verify(token, secretKey);
 
     const userId = decodedToken.userId;
 
