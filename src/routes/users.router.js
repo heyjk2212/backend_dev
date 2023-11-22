@@ -3,11 +3,7 @@ import { prisma } from "../utils/prisma/index.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import {
-  usersSchema,
-  userUpdateSchema,
-  paramsSchema,
-} from "../validation/joi.js";
+import { usersSchema, userUpdateSchema, paramsSchema } from "../validation/joi.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -95,7 +91,7 @@ router.post("/logout", async (req, res, next) => {
   try {
     res.clearCookie("authorization");
 
-    return res.status(200).json({ errorMessage: "로그아웃 되었습니다." })
+    return res.status(200).json({ errorMessage: "로그아웃 되었습니다." });
   } catch (error) {
     next(err);
   }
@@ -158,7 +154,7 @@ router.patch("/mypage/:userId", authMiddleware, async (req, res, next) => {
         loginId,
         nickname,
       },
-    });
+    });  
     return res
       .status(200)
       .json({ message: "성공적으로 유저 정보를 변경하였습니다." });
