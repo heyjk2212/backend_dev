@@ -82,11 +82,9 @@ router.post("/login", async (req, res, next) => {
       secretKey
     );
 
-    // res.cookie("authorization", `Bearer ${token}`);
-
     return res
       .status(200)
-      .json({ message: "로그인에 성공하였습니다.", token: token });
+      .json({ message: "로그인에 성공하였습니다.", token: `Bearer ${token}` });
   } catch (err) {
     next(err);
   }
