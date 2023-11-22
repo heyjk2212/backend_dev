@@ -11,7 +11,7 @@ import cors from 'cors';
 const app = express();
 const PORT = 3000;
 
-app.use(cors({ origin: 'http://localhost:3000', optionsSuccessStatus: 200 }));
+app.use(cors({ origin: '*', optionsSuccessStatus: 200 }));
 app.use(logMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -19,9 +19,6 @@ app.use(cookieParser());
 app.use("/api", [UsersRouter, OrdersRouter, GoodsRouter, GoodsCommentsRouter]);
 app.use(errorHandlingMiddleware);
 
-app.get('/', (req, res) => {
-  return res.status(200).json({message : 'hi'})
-})
 
 app.listen(PORT, () => {
   console.log(PORT, `Server running on port ${PORT}`);
