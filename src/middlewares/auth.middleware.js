@@ -3,16 +3,18 @@ import { prisma } from "../utils/prisma/index.js";
 
 export default async function (req, res, next) {
   try {
-    // const token = req.headers.authorization.split(" ")[1];
-    const { authorization } = req.cookies;
-    const [tokenType, token] = authorization.split(" ");
+    const token = req.headers.authorization;
+
+    if (!token || !token.startsWith("Bearer ")) {
+      throw new Error("올바른 토큰이 제공되지 않았습니다.");
+    }
+
+    const rawToken = token.split("Bearer ")[1].trim();
+
     const secretKey = process.env.SECRET_KEY;
 
-    if (tokenType !== "Bearer")
-      throw new Error("토큰 타입이 일치하지 않습니다.");
+    const decodedToken = jwt.verify(rawToken, secretKey);
 
-    // jwt.verify()는 인증에 실패하면 에러가 발생할 수 있기에 try-catch문으로 감싸줘야 한다.
-    const decodedToken = jwt.verify(token, secretKey);
     const userId = decodedToken.userId;
 
     // JWT에 있는 userId를 기반으로 사용자 검색

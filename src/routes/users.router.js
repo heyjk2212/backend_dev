@@ -92,9 +92,7 @@ router.post("/login", async (req, res, next) => {
 // LogOut API
 router.post("/logout", async (req, res, next) => {
   try {
-    res.clearCookie("authorization");
-
-    return res.status(200).json({ errorMessage: "로그아웃 되었습니다." });
+    return res.status(200).json({ message: "로그아웃 요청이 전송되었습니다." });
   } catch (error) {
     next(err);
   }
@@ -175,7 +173,6 @@ router.patch("/mypage/:userId", authMiddleware, async (req, res, next) => {
     const validateParams = await paramsSchema.validateAsync(req.params);
     const { userId } = validateParams;
     const { loginId, nickname } = validation;
-    // userId는 authMiddleware에서 가져와야할까..아니면 위에 params에서 가져와야 할까..?
 
     await prisma.users.update({
       where: {
