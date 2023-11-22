@@ -95,7 +95,7 @@ router.post("/logout", async (req, res, next) => {
   try {
     res.clearCookie("authorization");
 
-    return res.status(200).json({ errorMessage: "로그아웃 되었습니다." });
+    return res.status(200).json({ errorMessage: "로그아웃 되었습니다." })
   } catch (error) {
     next(err);
   }
