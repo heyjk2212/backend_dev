@@ -22,4 +22,4 @@ const paramsSchema = Joi.object({
   userId: Joi.number().integer().required(),
 });
 
-export { usersSchema, userUpdateSchema, paramsSchema };
+export { usersSchema, userUpdateSchema, paramsSchema, usersLoginSchema };

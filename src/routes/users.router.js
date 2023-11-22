@@ -7,6 +7,7 @@ import {
   usersSchema,
   userUpdateSchema,
   paramsSchema,
+  usersLoginSchema,
 } from "../validation/joi.js";
 import dotenv from "dotenv";
 dotenv.config();
@@ -81,7 +82,7 @@ router.post("/login", async (req, res, next) => {
       secretKey
     );
 
-    res.cookie("authorization", `Bearer ${token}`);
+    // res.cookie("authorization", `Bearer ${token}`);
 
     return res
       .status(200)
