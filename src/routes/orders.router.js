@@ -29,13 +29,17 @@ router.get("/orders", async (req, res, next) => {
 // 장바구니에 상품 넣기
 router.post("/orders", async (req, res, next) => {
     try {
-        const { goodsId, quantity } = req.body;
-
+        let { goodsId, quantity } = req.body;
+        if(typeof quantity === 'string'){
+            quantity = parseInt(quantity)
+        }
+        console.log(typeof quantity);
         const findGoods = await prisma.goods.findFirst({
             where: { goodsId: +goodsId },
         });
+        console.log(findGoods);
 
-        const totalPrice = findGoods.price * quantity;
+        const totalPrice = findGoods.price * +quantity;
 
         const JoinOrders = await prisma.orders.create({
             data: {
