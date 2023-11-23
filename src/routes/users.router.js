@@ -49,7 +49,7 @@ router.post("/signup", async (req, res, next) => {
 });
 
 // LogIn API
-router.post("/login", async (req, res, next) => {
+router.post("/login", authMiddleware, async (req, res, next) => {
   try {
     const validation = await usersLoginSchema.validateAsync(req.body);
     const { loginId, password } = validation;
@@ -92,7 +92,7 @@ router.post("/login", async (req, res, next) => {
 });
 
 // LogOut API
-router.post("/logout", async (req, res, next) => {
+router.post("/logout", authMiddleware, async (req, res, next) => {
   try {
     const token = req.headers.authorization; // 클라이언트로부터 받은 토큰
 
