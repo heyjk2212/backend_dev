@@ -47,7 +47,7 @@ router.post("/signup", async (req, res, next) => {
 // LogIn API
 router.post("/login", async (req, res, next) => {
   try {
-    const validation = await usersSchema.validateAsync(req.body);
+    const validation = await usersLoginSchema.validateAsync(req.body);
     const { loginId, password } = validation;
 
     const user = await prisma.users.findFirst({
@@ -74,13 +74,13 @@ router.post("/login", async (req, res, next) => {
       {
         userId: user.userId,
       },
-      secretKey
+      secretKey,
+      { expiresIn: "1h" }
     );
 
     res.cookie("authorization", `Bearer ${token}`);
 
     return res.status(200).json({ message: "로그인에 성공하였습니다." });
-    // return res.status(200).json({ userInfo: token }); // 토큰을 클라이언트에게 바로 전달
   } catch (err) {
     next(err);
   }
@@ -89,9 +89,9 @@ router.post("/login", async (req, res, next) => {
 // LogOut API
 router.post("/logout", async (req, res, next) => {
   try {
-    res.clearCookie("authorization");
-
-    return res.status(200).json({ errorMessage: "로그아웃 되었습니다." });
+    return res
+      .status(200)
+      .json({ message: "로그아웃이 완료되었습니다.", token: "" });
   } catch (error) {
     next(err);
   }
@@ -103,12 +103,41 @@ router.get("/checkLoginStatus", authMiddleware, async (req, res, next) => {
     const user = req.user;
 
     if (user) {
-      return res.status(200).json({ isLoggedIn: true, user });
+      const userInfo = await prisma.users.findUnique({
+        where: {
+          userId: user.userId,
+        },
+        select: {
+          userType: true,
+        },
+      });
+
+      return res.status(200).json({ isLoggedIn: true, userInfo });
     } else {
+      // 유저 정보가 없는 경우 (로그인 상태가 아님)
       return res
         .status(401)
         .json({ isLoggedIn: false, message: "사용자가 인증되지 않았습니다." });
     }
+  } catch (err) {
+    next(err); // 에러 발생 시 에러 핸들링 미들웨어로 전달
+  }
+});
+
+// check users information
+router.get("/usersInfo", async (req, res, next) => {
+  try {
+    const users = await prisma.users.findMany({
+      select: {
+        userId: true,
+        loginId: true,
+        password: true,
+        nickname: true,
+        userType: true,
+      },
+    });
+
+    return res.status(200).json({ data: users });
   } catch (err) {
     next(err);
   }
@@ -144,7 +173,6 @@ router.patch("/mypage/:userId", authMiddleware, async (req, res, next) => {
     const validateParams = await paramsSchema.validateAsync(req.params);
     const { userId } = validateParams;
     const { loginId, nickname } = validation;
-    // userId는 authMiddleware에서 가져와야할까..아니면 위에 params에서 가져와야 할까..?
 
     await prisma.users.update({
       where: {

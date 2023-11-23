@@ -3,8 +3,13 @@ import Joi from "joi";
 const usersSchema = Joi.object({
   loginId: Joi.string().min(3).max(15).alphanum().required(),
   password: Joi.string().min(4).max(20).invalid(Joi.ref("loginId")).required(),
-  nickname: Joi.string().min(1).max(20),
-  userType: Joi.string().valid("BUYER", "SELLER"),
+  nickname: Joi.string().min(1).max(20).required(),
+  userType: Joi.string().valid("BUYER", "SELLER").required(),
+});
+
+const usersLoginSchema = Joi.object({
+  loginId: Joi.string().min(3).max(15).alphanum().required(),
+  password: Joi.string().min(4).max(20).invalid(Joi.ref("loginId")).required(),
 });
 
 const userUpdateSchema = Joi.object({
