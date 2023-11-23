@@ -19,7 +19,7 @@ const secretKey = process.env.SECRET_KEY;
 router.post("/signup", async (req, res, next) => {
   try {
     const validation = await usersSchema.validateAsync(req.body);
-    const { loginId, password, nickname, userType } = validation;
+    const { loginId, password, nickname } = validation;
 
     const user = await prisma.users.findFirst({
       where: {
@@ -38,7 +38,6 @@ router.post("/signup", async (req, res, next) => {
         loginId,
         password: hashedPassword,
         nickname,
-        userType,
       },
     });
 
@@ -101,33 +100,6 @@ router.post("/logout", async (req, res, next) => {
   }
 });
 
-// API to check login status
-router.get("/checkLoginStatus", authMiddleware, async (req, res, next) => {
-  try {
-    const user = req.user;
-
-    if (user) {
-      const userInfo = await prisma.users.findUnique({
-        where: {
-          userId: user.userId,
-        },
-        select: {
-          userType: true,
-        },
-      });
-
-      return res.status(200).json({ isLoggedIn: true, userInfo });
-    } else {
-      // 유저 정보가 없는 경우 (로그인 상태가 아님)
-      return res
-        .status(401)
-        .json({ isLoggedIn: false, message: "사용자가 인증되지 않았습니다." });
-    }
-  } catch (err) {
-    next(err); // 에러 발생 시 에러 핸들링 미들웨어로 전달
-  }
-});
-
 // check users information
 router.get("/usersInfo", async (req, res, next) => {
   try {
@@ -137,7 +109,6 @@ router.get("/usersInfo", async (req, res, next) => {
         loginId: true,
         password: true,
         nickname: true,
-        userType: true,
       },
     });
 
@@ -159,7 +130,6 @@ router.get("/mypage", authMiddleware, async (req, res, next) => {
       select: {
         loginId: true,
         nickname: true,
-        userType: true,
         createdAt: true,
       },
     });
