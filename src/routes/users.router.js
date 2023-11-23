@@ -92,7 +92,9 @@ router.post("/login", async (req, res, next) => {
 // LogOut API
 router.post("/logout", async (req, res, next) => {
   try {
-    return res.status(200).json({ message: "로그아웃 요청이 전송되었습니다." });
+    return res
+      .status(200)
+      .json({ message: "로그아웃이 완료되었습니다.", token: "" });
   } catch (error) {
     next(err);
   }
@@ -104,7 +106,7 @@ router.get("/checkLoginStatus", authMiddleware, async (req, res, next) => {
     const user = req.user;
 
     if (user) {
-      const userInfo = await prisma.users.findFirst({
+      const userInfo = await prisma.users.findUnique({
         where: {
           userId: user.userId,
         },
@@ -115,12 +117,13 @@ router.get("/checkLoginStatus", authMiddleware, async (req, res, next) => {
 
       return res.status(200).json({ isLoggedIn: true, userInfo });
     } else {
+      // 유저 정보가 없는 경우 (로그인 상태가 아님)
       return res
         .status(401)
         .json({ isLoggedIn: false, message: "사용자가 인증되지 않았습니다." });
     }
   } catch (err) {
-    next(err);
+    next(err); // 에러 발생 시 에러 핸들링 미들웨어로 전달
   }
 });
 
