@@ -22,4 +22,15 @@ const paramsSchema = Joi.object({
   userId: Joi.number().integer().required(),
 });
 
-export { usersSchema, userUpdateSchema, paramsSchema };
+const goodsSchema = Joi.object({
+  goodsName : Joi.string().min(1).max(10).required(),
+  imageUrl : Joi.string().required(),
+  price : Joi.number().integer().required(),
+  content : Joi.string().required()
+})
+
+const commentsSchema = Joi.object({
+  comment : Joi.required()
+})
+
+export { usersSchema, userUpdateSchema, paramsSchema, goodsSchema, commentsSchema };
