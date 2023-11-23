@@ -49,10 +49,11 @@ router.post("/signup", async (req, res, next) => {
 });
 
 // LogIn API
-router.post("/login", async (req, res, next) => {
+router.post("/login", authMiddleware, async (req, res, next) => {
   try {
     const validation = await usersLoginSchema.validateAsync(req.body);
     const { loginId, password } = validation;
+    const { userId } = req.user;
 
     const user = await prisma.users.findFirst({
       where: {
@@ -86,7 +87,7 @@ router.post("/login", async (req, res, next) => {
 
     console.log(">>>>>>", token);
 
-    return res.status(200).json({ message: "로그인 성공" });
+    return res.status(200).json({ token: token });
     // return res.status(200).json({ token: `Bearer ${token}` });
   } catch (err) {
     next(err);
