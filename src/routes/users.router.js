@@ -49,7 +49,7 @@ router.post("/signup", async (req, res, next) => {
 });
 
 // LogIn API
-router.post("/login", authMiddleware, async (req, res, next) => {
+router.post("/login", async (req, res, next) => {
   try {
     const validation = await usersLoginSchema.validateAsync(req.body);
     const { loginId, password } = validation;
@@ -84,7 +84,9 @@ router.post("/login", authMiddleware, async (req, res, next) => {
 
     // res.cookie("authorization", `Bearer ${token}`);
 
-    return res.status(200).json({ token: token });
+    console.log(">>>>>>", token);
+
+    return res.status(200).json({ message: "로그인 성공" });
     // return res.status(200).json({ token: `Bearer ${token}` });
   } catch (err) {
     next(err);

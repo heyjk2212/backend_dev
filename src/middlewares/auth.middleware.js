@@ -5,6 +5,8 @@ export default async function (req, res, next) {
   try {
     const token = req.headers.authorization;
 
+    console.log(">>>>>>>??");
+
     if (!token || !token.startsWith("Bearer ")) {
       throw new Error("올바른 토큰이 제공되지 않았습니다.");
     }
