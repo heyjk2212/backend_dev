@@ -78,7 +78,8 @@ router.post("/login", async (req, res, next) => {
       {
         userId: user.userId,
       },
-      secretKey
+      secretKey,
+      { expiresIn: "1h" }
     );
 
     res.cookie("authorization", `Bearer ${token}`);
