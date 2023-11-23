@@ -20,17 +20,11 @@ model Users {
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
-  Goods Goods[]
-  Comments Comments[]
-  Orders Orders[]
-  Likes Likes[]
-
   @@map("Users")
 }
 
 model Goods {
   goodsId Int @id @default(autoincrement()) @map("goodsId")
-  UserId Int @map("UserId")
   goodsName String @map("goodsName")
   imageUrl String @map("imageUrl")
   price Int @map("price")
@@ -40,7 +34,6 @@ model Goods {
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
-  User Users @relation(fields: [UserId], references: [userId], onDelete: Cascade)
   Comments Comments[]
   Orders Orders[]
   Likes Likes[]
@@ -51,13 +44,11 @@ model Goods {
 model Comments {
   commentId Int @id @default(autoincrement()) @map("commentId")
   GoodsId Int @map("GoodsId")
-  UserId Int @map("UserId")
   comment String @map("comment") @db.Text
 
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
   
-  User Users @relation(fields: [UserId], references: [userId], onDelete: Cascade)
   Goods Goods @relation(fields: [GoodsId], references: [goodsId], onDelete: Cascade)
 
   @@map("Comments")
@@ -66,11 +57,9 @@ model Comments {
 model Orders {
   orderId Int @id @default(autoincrement()) @map("orderId")
   GoodsId Int @map("GoodsId")
-  UserId Int @map("UserId")
   quantity Int @default(1) @map("quantity")
   totalPrice Int @map("totalPrice")
 
-  User Users @relation(fields: [UserId], references: [userId], onDelete: Cascade)
   Good Goods @relation(fields: [GoodsId], references: [goodsId], onDelete: Cascade)
 
   @@map("Orders")
@@ -78,10 +67,8 @@ model Orders {
 
 model Likes {
   likeId Int @id @default(autoincrement()) @map("likeId")
-  UserId Int @map("UserId")
   GoodsId Int @map("GoodsId")
 
-  User      Users   @relation(fields: [UserId], references: [userId], onDelete : Cascade)
   Good     Goods   @relation(fields: [GoodsId], references: [goodsId], onDelete : Cascade)
 
   @@map("Likes")

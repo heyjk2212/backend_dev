@@ -1,22 +1,17 @@
 import express from "express";
 import { prisma } from "../utils/prisma/index.js";
-import authMiddleware from "../middlewares/auth.middleware.js";
+import { goodsSchema } from "../validation/joi.js";
 
 const router = express.Router();
 
 // 제품 글 작성
-router.post("/goods/content", authMiddleware, async (req, res, next) => {
+router.post("/goods/content", async (req, res, next) => {
   try {
-    const { userId } = req.user;
-    const { goodsName, imageUrl, price, content } = req.body;
-
-    if (req.user.userType === "BUYER") {
-      return res.status(400).json({ message: "글 작성 권한이 없습니다." });
-    }
+    const validation = await goodsSchema.validateAsync(req.body);
+    const { goodsName, imageUrl, price, content } = validation;
 
     await prisma.goods.create({
       data: {
-        UserId: +userId,
         goodsName: goodsName,
         imageUrl: imageUrl,
         price: price,
@@ -24,9 +19,8 @@ router.post("/goods/content", authMiddleware, async (req, res, next) => {
       },
     });
     return res.status(201).json({ message: "게시글을 등록 하였습니다." });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "서버 에러" });
+  } catch (err) {
+    next(err);
   }
 });
 
@@ -43,85 +37,62 @@ router.get("/goods", async (req, res, next) => {
       },
     });
     return res.status(201).json({ data: Goods });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "서버 에러" });
+  } catch (err) {
+    next(err);
   }
 });
 
 // 제품 글 수정
-router.patch(
-  "/goods/:goodsId/content",
-  authMiddleware,
-  async (req, res, next) => {
-    try {
-      const { userId } = req.user;
-      const { goodsId } = req.params;
-      const { goodsName, imageUrl, price, content } = req.body;
+router.patch("/goods/:goodsId/content", async (req, res, next) => {
+  try {
+    const { goodsId } = req.params;
+    const validation = await goodsSchema.validateAsync(req.body);
+    const { goodsName, imageUrl, price, content } = validation;
 
-      if (req.user.userType === "BUYER") {
-        return res
-          .status(400)
-          .json({ message: "해당 게시글에 대한 권한이 없습니다." });
-      }
+    const findGoods = await prisma.goods.findFirst({
+      where: { goodsId: +goodsId },
+    });
 
-      const findGoods = await prisma.goods.findFirst({
-        where: { UserId: +userId, goodsId: +goodsId },
-      });
-
-      await prisma.goods.update({
-        where: { UserId: +userId, goodsId: +goodsId },
-        data: {
-          goodsName: goodsName,
-          imageUrl: imageUrl,
-          price: price,
-          content: content,
-        },
-      });
-      return res.status(201).json({ message: "수정이 완료 되었습니다." });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "서버 에러" });
-    }
+    await prisma.goods.update({
+      where: { goodsId: +goodsId },
+      data: {
+        goodsName: goodsName,
+        imageUrl: imageUrl,
+        price: price,
+        content: content,
+      },
+    });
+    return res.status(201).json({ message: "수정이 완료 되었습니다." });
+  } catch (err) {
+    next(err);
   }
-);
+});
 
 // 제품 글 삭제
-router.delete(
-  "/goods/:goodsId/content",
-  authMiddleware,
-  async (req, res, next) => {
-    try {
-      const { userId } = req.user;
-      const { goodsId } = req.params;
+router.delete("/goods/:goodsId/content", async (req, res, next) => {
+  try {
+    const { goodsId } = req.params;
 
-      if (req.user.userType === "BUYER") {
-        return res.status(400).json({ message: "권한이 없습니다." });
-      }
-
-      const existsGoods = await prisma.goods.findFirst({
-        where: { UserId: +userId, goodsId: +goodsId },
-      });
-      if (!existsGoods) {
-        return res.status(401).json({ message: "상품이 존재하지 않습니다." });
-      }
-
-      await prisma.goods.delete({
-        where: { UserId: +userId, goodsId: +goodsId },
-      });
-      return res.status(201).json({ message: "삭제가 완료 되었습니다." });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "서버 에러" });
+    const existsGoods = await prisma.goods.findFirst({
+      where: { goodsId: +goodsId },
+    });
+    if (!existsGoods) {
+      return res.status(401).json({ message: "상품이 존재하지 않습니다." });
     }
+
+    await prisma.goods.delete({
+      where: { goodsId: +goodsId },
+    });
+    return res.status(201).json({ message: "삭제가 완료 되었습니다." });
+  } catch (err) {
+    next(err);
   }
-);
+});
 
 // 상세 정보 글 조회
 router.get("/goods/:goodsId", async (req, res, next) => {
   try {
     const { goodsId } = req.params;
-
     const Goods = await prisma.goods.findFirst({
       where: { goodsId: +goodsId },
       select: {
@@ -138,26 +109,23 @@ router.get("/goods/:goodsId", async (req, res, next) => {
     });
 
     return res.status(201).json({ data: Goods });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "서버 에러" });
+  } catch (err) {
+    next(err);
   }
 });
 
-router.post("/goods/:goodsId/like", authMiddleware, async (req, res, next) => {
+router.post("/goods/:goodsId/like", async (req, res, next) => {
   try {
     const { goodsId } = req.params;
-    const { userId } = req.user;
 
     let isLike = await prisma.likes.findFirst({
-      where: { GoodsId: +goodsId, UserId: +userId },
+      where: { GoodsId: +goodsId },
     });
 
     if (!isLike) {
       await prisma.likes.create({
         data: {
           GoodsId: +goodsId,
-          UserId: +userId,
         },
       });
 
@@ -187,9 +155,8 @@ router.post("/goods/:goodsId/like", authMiddleware, async (req, res, next) => {
         .status(200)
         .json({ message: "게시글의 좋아요를 취소하였습니다." });
     }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "서버 오류" });
+  } catch (err) {
+    next(err);
   }
 });
 

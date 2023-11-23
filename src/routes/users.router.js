@@ -7,7 +7,6 @@ import {
   usersSchema,
   userUpdateSchema,
   paramsSchema,
-  usersLoginSchema,
 } from "../validation/joi.js";
 import dotenv from "dotenv";
 dotenv.config();
@@ -79,10 +78,13 @@ router.post("/login", async (req, res, next) => {
       {
         userId: user.userId,
       },
-      secretKey
+      secretKey,
+      { expiresIn: "1h" }
     );
 
-    return res.status(200).json({ token: token });
+    res.cookie("authorization", `Bearer ${token}`);
+
+    return res.status(200).json({ message: "로그인에 성공하였습니다." });
   } catch (err) {
     next(err);
   }
@@ -91,9 +93,9 @@ router.post("/login", async (req, res, next) => {
 // LogOut API
 router.post("/logout", async (req, res, next) => {
   try {
-    res.clearCookie("authorization");
-
-    return res.status(200).json({ errorMessage: "로그아웃 되었습니다." });
+    return res
+      .status(200)
+      .json({ message: "로그아웃이 완료되었습니다.", token: "" });
   } catch (error) {
     next(err);
   }
@@ -105,7 +107,7 @@ router.get("/checkLoginStatus", authMiddleware, async (req, res, next) => {
     const user = req.user;
 
     if (user) {
-      const userInfo = await prisma.users.findFirst({
+      const userInfo = await prisma.users.findUnique({
         where: {
           userId: user.userId,
         },
@@ -116,12 +118,13 @@ router.get("/checkLoginStatus", authMiddleware, async (req, res, next) => {
 
       return res.status(200).json({ isLoggedIn: true, userInfo });
     } else {
+      // 유저 정보가 없는 경우 (로그인 상태가 아님)
       return res
         .status(401)
         .json({ isLoggedIn: false, message: "사용자가 인증되지 않았습니다." });
     }
   } catch (err) {
-    next(err);
+    next(err); // 에러 발생 시 에러 핸들링 미들웨어로 전달
   }
 });
 
@@ -174,7 +177,6 @@ router.patch("/mypage/:userId", authMiddleware, async (req, res, next) => {
     const validateParams = await paramsSchema.validateAsync(req.params);
     const { userId } = validateParams;
     const { loginId, nickname } = validation;
-    // userId는 authMiddleware에서 가져와야할까..아니면 위에 params에서 가져와야 할까..?
 
     await prisma.users.update({
       where: {
