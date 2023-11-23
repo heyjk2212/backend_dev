@@ -9,12 +9,13 @@ import {
   paramsSchema,
   usersLoginSchema,
 } from "../validation/joi.js";
-import dotenv from "dotenv";
-dotenv.config();
+
+// import dotenv from "dotenv";
+// dotenv.config();
 
 const router = express.Router();
 
-const secretKey = process.env.SECRET_KEY;
+// const secretKey = process.env.SECRET_KEY;
 
 // SignUp API
 router.post("/signup", async (req, res, next) => {
@@ -49,11 +50,10 @@ router.post("/signup", async (req, res, next) => {
 });
 
 // LogIn API
-router.post("/login", authMiddleware, async (req, res, next) => {
+router.post("/login", async (req, res, next) => {
   try {
     const validation = await usersLoginSchema.validateAsync(req.body);
     const { loginId, password } = validation;
-    const { userId } = req.user;
 
     const user = await prisma.users.findFirst({
       where: {
@@ -79,15 +79,11 @@ router.post("/login", authMiddleware, async (req, res, next) => {
       {
         userId: user.userId,
       },
-      secretKey
-      // { expiresIn: "1h" }
+      // secretKey
+      "customized_secret_key"
     );
 
-    // res.cookie("authorization", `Bearer ${token}`);
-
-    console.log(">>>>>>", token);
-
-    return res.status(200).json({ token: token });
+    return res.status(200).json({ message: "로그인 성공" });
     // return res.status(200).json({ token: `Bearer ${token}` });
   } catch (err) {
     next(err);
