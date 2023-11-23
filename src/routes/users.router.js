@@ -7,6 +7,7 @@ import {
   usersSchema,
   userUpdateSchema,
   paramsSchema,
+  usersLoginSchema,
 } from "../validation/joi.js";
 import dotenv from "dotenv";
 dotenv.config();

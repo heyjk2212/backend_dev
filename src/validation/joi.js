@@ -3,7 +3,7 @@ import Joi from "joi";
 const usersSchema = Joi.object({
   loginId: Joi.string().min(3).max(15).alphanum().required(),
   password: Joi.string().min(4).max(20).invalid(Joi.ref("loginId")).required(),
-  nickname: Joi.string().min(1).max(20).required()
+  nickname: Joi.string().min(1).max(20).required(),
 });
 
 const usersLoginSchema = Joi.object({
@@ -13,7 +13,7 @@ const usersLoginSchema = Joi.object({
 
 const userUpdateSchema = Joi.object({
   loginId: Joi.string().min(3).max(15).alphanum(),
-  nickname: Joi.string().min(1).max(20)
+  nickname: Joi.string().min(1).max(20),
 });
 
 const paramsSchema = Joi.object({
@@ -37,4 +37,5 @@ export {
   paramsSchema,
   goodsSchema,
   commentsSchema,
+  usersLoginSchema,
 };
