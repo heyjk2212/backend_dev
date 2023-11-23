@@ -111,6 +111,32 @@ router.post("/logout", async (req, res, next) => {
   }
 });
 
+// API to check login status
+// router.get("/checkLoginStatus", authMiddleware, async (req, res, next) => {
+//   try {
+//     const user = req.user;
+
+//     if (user) {
+//       const userInfo = await prisma.users.findFirst({
+//         where: {
+//           userId: user.userId,
+//         },
+//         select: {
+//           userType: true,
+//         },
+//       });
+
+//       return res.status(200).json({ isLoggedIn: true, userInfo });
+//     } else {
+//       return res
+//         .status(401)
+//         .json({ isLoggedIn: false, message: "사용자가 인증되지 않았습니다." });
+//     }
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
 // check users information
 router.get("/usersInfo", async (req, res, next) => {
   try {
