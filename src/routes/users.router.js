@@ -78,14 +78,14 @@ router.post("/login", async (req, res, next) => {
       {
         userId: user.userId,
       },
-      secretKey,
-      { expiresIn: "1h" }
+      secretKey
+      // { expiresIn: "1h" }
     );
 
     // res.cookie("authorization", `Bearer ${token}`);
 
-    return res.status(200).json({ token: `Bearer ${token}` });
-    // return res.status(200).json({ message: "로그인에 성공하였습니다." });
+    return res.status(200).json({ token: token });
+    // return res.status(200).json({ token: `Bearer ${token}` });
   } catch (err) {
     next(err);
   }
