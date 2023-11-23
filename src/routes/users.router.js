@@ -81,9 +81,10 @@ router.post("/login", async (req, res, next) => {
       { expiresIn: "1h" }
     );
 
-    res.cookie("authorization", `Bearer ${token}`);
+    // res.cookie("authorization", `Bearer ${token}`);
 
-    return res.status(200).json({ message: "로그인에 성공하였습니다." });
+    return res.status(200).json({ token: `Bearer ${token}` });
+    // return res.status(200).json({ message: "로그인에 성공하였습니다." });
   } catch (err) {
     next(err);
   }
@@ -92,9 +93,19 @@ router.post("/login", async (req, res, next) => {
 // LogOut API
 router.post("/logout", async (req, res, next) => {
   try {
-    return res
-      .status(200)
-      .json({ message: "로그아웃이 완료되었습니다.", token: "" });
+    const token = req.headers.authorization; // 클라이언트로부터 받은 토큰
+
+    if (!token) {
+      return res.status(401).json({ message: "로그인되어 있지 않습니다." });
+    }
+
+    jwt.verify(token.split(" ")[1], secretKey, (err) => {
+      if (err) {
+        return res.status(401).json({ message: "잘못된 토큰입니다." });
+      }
+
+      return res.status(200).json({ message: "로그아웃이 완료되었습니다." });
+    });
   } catch (error) {
     next(err);
   }
